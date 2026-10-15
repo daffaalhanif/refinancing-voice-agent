@@ -1,0 +1,622 @@
+{
+  "name": "PropertyHub - Call Result Handler",
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "d3174a0a-3aaf-4ee8-bbd1-3d35b1ae614c",
+              "leftValue": "={{ $json.body.event }}",
+              "rightValue": "call_analyzed",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        208,
+        0
+      ],
+      "id": "80f614f6-066d-47da-8e03-261e3c2e6557",
+      "name": "Filter - Event Call Analyzed"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ ($('Receive Webhook - All Events from Retell').item.json.body.call.call_status === 'ended' && $('Receive Webhook - All Events from Retell').item.json.body.call.disconnection_reason !== 'voicemail_reached' && $('Receive Webhook - All Events from Retell').item.json.body.call.disconnection_reason !== 'ivr_reached' && $('Receive Webhook - All Events from Retell').item.json.body.call.transcript !== undefined && $('Receive Webhook - All Events from Retell').item.json.body.call.transcript.trim().length > 0).toBoolean() }}",
+                    "rightValue": "=$('Receive Webhook - All Events from Retell').item.json.body.call.call_status === 'ended' && $('Receive Webhook - All Events from Retell').item.json.body.call.disconnection_reason !== 'voicemail_reached' && $('Receive Webhook - All Events from Retell').item.json.body.call.disconnection_reason !== 'ivr_reached'",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    },
+                    "id": "226302e6-4a4c-44fb-9ec0-4d1f82bf9fa0"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Ended - Success"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "beb8382f-1b9c-402a-9ba3-a42ce2a0fb0f",
+                    "leftValue": "={{ ($('Receive Webhook - All Events from Retell').item.json.body.call.call_status === 'ended' && ($('Receive Webhook - All Events from Retell').item.json.body.call.disconnection_reason === 'voicemail_reached' || $('Receive Webhook - All Events from Retell').item.json.body.call.disconnection_reason === 'ivr_reached' || $('Receive Webhook - All Events from Retell').item.json.body.call.transcript === undefined || $('Receive Webhook - All Events from Retell').item.json.body.call.transcript.trim().length === 0)).toBoolean() }}",
+                    "rightValue": "=",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Ended - No Conversation"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "12bd3a4d-4eb7-48c4-9b88-7fa0ce5a6a7c",
+                    "leftValue": "={{ ($('Receive Webhook - All Events from Retell').item.json.body.call.call_status === 'not_connected').toBoolean() }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Not Connected"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "ba1bdd05-5f5e-418f-9855-998ea37cd82d",
+                    "leftValue": "={{ ($('Receive Webhook - All Events from Retell').item.json.body.call.call_status === 'error').toBoolean() }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Error"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        608,
+        -32
+      ],
+      "id": "dda913be-2718-4e74-8383-49d3821d61f1",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "439651bf-c03b-4d99-a947-72f9db29ae49",
+              "name": "Status",
+              "value": "called",
+              "type": "string"
+            },
+            {
+              "id": "1f43ffbe-15fb-4ebb-9428-30855ca8729e",
+              "name": "Summary",
+              "value": "={{ $('Receive Webhook - All Events from Retell').item.json.body.call.call_analysis.custom_analysis_data.ringkasan_singkat }}",
+              "type": "string"
+            },
+            {
+              "id": "6020139e-a895-46a5-b4b0-62b34c30097d",
+              "name": "Disconnection Reason",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        896,
+        -240
+      ],
+      "id": "d63d986a-0cf1-4656-9a7f-11f4078e6394",
+      "name": "Set Result - Success"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b62ddea7-11b4-494b-8827-e42904c81c75",
+              "name": "Status",
+              "value": "not-called",
+              "type": "string"
+            },
+            {
+              "id": "271327c6-5197-4ce5-a535-b15f6aa90eac",
+              "name": "Summary",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "c895a3c9-73a4-4d13-bade-7de4ac8af9ba",
+              "name": "Disconnection Reason",
+              "value": "={{ $('Receive Webhook - All Events from Retell').item.json.body.call.disconnection_reason }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        896,
+        -80
+      ],
+      "id": "38738628-52a7-4b6c-846c-e11a1d8f7993",
+      "name": "Set Result - No Conversation"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e72f99ed-5412-4cd5-b043-3ec88d9f6754",
+              "name": "Status",
+              "value": "not-called",
+              "type": "string"
+            },
+            {
+              "id": "70ffbb85-ac2c-424d-ab73-d1602e618946",
+              "name": "Summary",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "49e85cc7-fced-4197-b0f1-3a1811a9631f",
+              "name": "Disconnection Reason",
+              "value": "={{ $('Receive Webhook - All Events from Retell').item.json.body.call.disconnection_reason }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        896,
+        96
+      ],
+      "id": "a03189ca-4b65-4c7e-8ee8-3f3302f5a003",
+      "name": "Set Result - Not Connected"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b5865b5d-181a-42a9-81fe-fcc92c4285b3",
+              "name": "Status",
+              "value": "error",
+              "type": "string"
+            },
+            {
+              "id": "72525548-2f5f-44b6-b244-e550c32d600d",
+              "name": "Summary",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "443cb31c-a8c0-40ea-a3c6-f39ad9baa9f9",
+              "name": "Disconnection Reason",
+              "value": "={{ $('Receive Webhook - All Events from Retell').item.json.body.call.disconnection_reason }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        896,
+        272
+      ],
+      "id": "3b676442-4fd4-4285-a2df-5eddcefb6eaa",
+      "name": "Set Result - Error"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "retell-webhook",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "d166f4a3-c26f-48f9-a202-436ff78ee8f8",
+      "name": "Receive Webhook - All Events from Retell",
+      "webhookId": "YOUR_WEBHOOK_ID"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "PropertyHub - Refinancing Call Queue",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1561573061,
+          "mode": "list",
+          "cachedResultName": "Form responses 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=1561573061"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "phone_e164",
+              "lookupValue": "={{ $('Receive Webhook - All Events from Retell').item.json.body.call.to_number }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        400,
+        0
+      ],
+      "id": "e126dd4e-f3c5-4f94-b576-eb3ea6bfbf67",
+      "name": "Find Row - Match Phone Number",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_GOOGLE_SHEETS_CREDENTIAL_ID",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "PropertyHub - Refinancing Call Queue",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1561573061,
+          "mode": "list",
+          "cachedResultName": "Form responses 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=1561573061"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "={{ $json.Status }}",
+            "Summary": "={{ $json.Summary }}",
+            "phone_e164": "={{ $('Receive Webhook - All Events from Retell').item.json.body.call.to_number }}",
+            "Disconnection Reason": "={{ $json['Disconnection Reason'] }}"
+          },
+          "matchingColumns": [
+            "phone_e164"
+          ],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Nama Lengkap",
+              "displayName": "Nama Lengkap",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Nomor Telepon Aktif (yang bisa dihubungi)",
+              "displayName": "Nomor Telepon Aktif (yang bisa dihubungi)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Apakah kamu saat ini masih punya cicilan KPR yang berjalan?",
+              "displayName": "Apakah kamu saat ini masih punya cicilan KPR yang berjalan?",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Saya menyetujui untuk dihubungi oleh PropertyHub melalui panggilan telepon (termasuk panggilan otomatis berbasis AI) terkait informasi Take Over KPR yang saya isi di form ini.",
+              "displayName": "Saya menyetujui untuk dihubungi oleh PropertyHub melalui panggilan telepon (termasuk panggilan otomatis berbasis AI) terkait informasi Take Over KPR yang saya isi di form ini.",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Disconnection Reason",
+              "displayName": "Disconnection Reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Summary",
+              "displayName": "Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "phone_e164",
+              "displayName": "phone_e164",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1184,
+        0
+      ],
+      "id": "f9163da8-bfa7-49f6-8965-e800d8d6f655",
+      "name": "Update Sheets - Status and Summary",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_GOOGLE_SHEETS_CREDENTIAL_ID",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Filter - Event Call Analyzed": {
+      "main": [
+        [
+          {
+            "node": "Find Row - Match Phone Number",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Set Result - Success",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Result - No Conversation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Result - Not Connected",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Result - Error",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        []
+      ]
+    },
+    "Set Result - Success": {
+      "main": [
+        [
+          {
+            "node": "Update Sheets - Status and Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Result - No Conversation": {
+      "main": [
+        [
+          {
+            "node": "Update Sheets - Status and Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Result - Not Connected": {
+      "main": [
+        [
+          {
+            "node": "Update Sheets - Status and Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Result - Error": {
+      "main": [
+        [
+          {
+            "node": "Update Sheets - Status and Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Receive Webhook - All Events from Retell": {
+      "main": [
+        [
+          {
+            "node": "Filter - Event Call Analyzed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Row - Match Phone Number": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "09b1c9b7-b017-405a-80d5-285bf73a21c8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "YOUR_N8N_INSTANCE_ID"
+  },
+  "id": "emUX4T2EKGWBvmx7",
+  "tags": []
+}
